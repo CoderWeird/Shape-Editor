@@ -1,6 +1,9 @@
 from tkinter import *
 from tkinter import colorchooser, filedialog, messagebox
 from PIL import Image, ImageDraw, ImageFilter, ImageGrab, ImageTk
+import sys
+import time
+import tkinter as tk
 
 LAYERS_DICT = {}
 RECYCLED = {}
@@ -10,17 +13,19 @@ X3_CIRCLES = {}
 SAVED = False
 count = 0
 marks = 0
-
 root = Tk()
 root.state('zoomed')
-root.config(bg='#242323')
-root.iconphoto(False, ImageTk.PhotoImage(file='photoshop.png'))
+root.config(bg='#0d0c0c')
+root.iconphoto(False, ImageTk.PhotoImage(
+    file="C:/Users/DrewM/OneDrive/Documents/Code/ShapeEditorLogo.png"))
+
 
 def Exit():
+    global SAVED
     warn = messagebox.askyesnocancel(
         'WARNING', 'Are you sure you want to exit without saving?')
     if warn == True:
-        exit()
+        sys.exit()
     elif warn == False:
         Save_Canvas()
     elif warn == None:
@@ -35,7 +40,8 @@ def start_pos(event):
         LAYERS_DICT['canvas'].delete(Circles['CIRCLE1'])
     x1 = event.x
     y1 = event.y
-    circle1 = LAYERS_DICT['canvas'].create_oval(x1, y1, x1+5, y1+5, fill='black')
+    circle1 = LAYERS_DICT['canvas'].create_oval(
+        x1, y1, x1+5, y1+5, fill='black')
     if 'CIRCLE2' in Circles:
         out = LAYERS_DICT['canvas'].create_rectangle(
             x1, y1, x2, y2, outline='black', dash=(3, 100))
@@ -67,16 +73,19 @@ def end_pos(event):
     else:
         root.title(f'Shape Editor • {str(root.filename)} •')
 
+
 def escape(event):
-    LAYERS_DICT['canvas'].delete(Circles['CIRCLE1'])
-    LAYERS_DICT['canvas'].delete(Circles['CIRCLE2'])
-    LAYERS_DICT['canvas'].delete(OUTLINES['OUTLINE'])
-    del Circles['CIRCLE1']
-    del Circles['CIRCLE2']
+    try:
+        LAYERS_DICT['canvas'].delete(Circles['CIRCLE1'])
+        LAYERS_DICT['canvas'].delete(Circles['CIRCLE2'])
+        LAYERS_DICT['canvas'].delete(OUTLINES['OUTLINE'])
+    except KeyError:
+        pass
     if SAVED == False:
         root.title('Shape Editor • Unsaved')
     else:
         root.title(f'Shape Editor • {str(root.filename)} •')
+
 
 def Arc():
     global count
@@ -95,7 +104,8 @@ def Arc():
     def fill_area(event):
         global count
         color = colorchooser.askcolor()
-        arc = canvas.create_arc(x1, y1, x2, y2, fill=color[1], outline=color[1], style=ARC)
+        arc = canvas.create_arc(
+            x1, y1, x2, y2, fill=color[1], outline=color[1], style=ARC)
         LAYERS_DICT.update({f'arc{count}': arc})
         LAYERS_DICT['canvas'].delete(Circles['CIRCLE1'])
         LAYERS_DICT['canvas'].delete(Circles['CIRCLE2'])
@@ -110,6 +120,7 @@ def Arc():
     canvas.bind("<Button-3>", end_pos)
     canvas.bind("<Escape>", escape)
     root.bind("<Return>", fill_area)
+
 
 def make_Text():
     global count
@@ -209,9 +220,10 @@ def make_Square():
             x1, y1, x2, y2, fill=color[1], outline=color[1])
         count += 1
         LAYERS_DICT.update({f'rect{count}': rect})
+        
+        LAYERS_DICT['canvas'].delete(OUTLINES['OUTLINE'])
         LAYERS_DICT['canvas'].delete(Circles['CIRCLE1'])
         LAYERS_DICT['canvas'].delete(Circles['CIRCLE2'])
-        LAYERS_DICT['canvas'].delete(OUTLINES['OUTLINE'])
         del Circles['CIRCLE1']
         del Circles['CIRCLE2']
         if SAVED == False:
@@ -434,7 +446,6 @@ def delete_all():
 def clear_canvas():
     global LAYERS_DICT
     LAYERS_DICT['canvas'].delete("all")
-    LAYERS_DICT = {}
     if SAVED == False:
         root.title('Shape Editor • Unsaved')
     else:
@@ -480,17 +491,22 @@ def shortcut9(event):
 def shortcut10(event):
     New_Canvas()
 
+
 def shortcut11(event):
     Arc()
+
 
 def shortcut12(event):
     make_Text()
 
+
 def shortcut13(event):
     undo()
 
+
 def shortcut14(event):
     save_as()
+
 
 def Free_Draw():
     global image1
@@ -506,7 +522,7 @@ def Free_Draw():
     def paint(e):
         global lastx, lasty, count
         x, y = e.x, e.y
-        mark = LAYERS_DICT['canvas'].create_line((lastx, lasty, x, y), width=3)
+        mark = LAYERS_DICT['canvas'].create_line((lastx, lasty, x, y), width=2)
         #  --- PIL
         draw.line((lastx, lasty, x, y), fill='black', width=1)
         LAYERS_DICT.update({f'mark{count}': mark})
@@ -527,7 +543,6 @@ def smile():
     part5 = LAYERS_DICT['canvas'].create_line(211, 362, 345, 362, fill='black')
     part6 = LAYERS_DICT['canvas'].create_line(345, 362, 448, 270, fill='black')
     LAYERS_DICT.update({'smile': [part1, part2, part3, part4, part5, part6]})
-
     if SAVED == False:
         root.title('Shape Editor • Unsaved')
     else:
@@ -557,12 +572,9 @@ def ground():
 
 
 def erase():
-
     def eraser(event):
         LAYERS_DICT['canvas'].delete('all')
-
     LAYERS_DICT['canvas'].bind('<Button-1>', eraser)
-
     if SAVED == False:
         root.title('Shape Editor • Unsaved')
     else:
@@ -584,7 +596,6 @@ def coords_find():
         can.create_rectangle(x, y, x+10, y+10, fill='magenta')
         label = can.create_text(x, y+10, text="x: " + str(x), fill="yellow")
         labely = can.create_text(x, y+20, text="y: " + str(y), fill="yellow")
-
     can.bind("<Button-1>", find)
 
 
@@ -599,6 +610,7 @@ def doc():
 
 
 def save_as():
+    global SAVED
     x = LAYERS_DICT['canvas'].winfo_y()+LAYERS_DICT['canvas'].winfo_rootx()
     y = LAYERS_DICT['canvas'].winfo_x()+LAYERS_DICT['canvas'].winfo_rooty()
     x1 = x+root.winfo_width()
@@ -619,14 +631,16 @@ def Save_Canvas():
         root.filename = filedialog.asksaveasfilename(initialfile='.jpg', title='Save As', filetypes=(
             ('JPG image', '*.jpg'), ('PNG images', '*.png'), ('JPEG images', '*.jpeg'), ('All files', '*.*')), defaultextension='.jpg')
         root.title(f'Shape Editor • {str(root.filename)}')
-        ImageGrab.grab().crop((x, y, x1, y1)).save(root.filename)
+        # ImageGrab.grab().crop(()).save(root.filename)
+        ImageGrab.grab(bbox=(x, y, x1, y1)).save(root.filename)
         SAVED = True
     elif SAVED == True:
-        x = root.winfo_rootx()+root.winfo_x()
-        y = root.winfo_rooty()+root.winfo_y()
+        x = LAYERS_DICT['canvas'].winfo_y()+LAYERS_DICT['canvas'].winfo_rootx()
+        y = LAYERS_DICT['canvas'].winfo_x()+LAYERS_DICT['canvas'].winfo_rooty()
         x1 = x+root.winfo_width()
         y1 = y+root.winfo_height()
-        ImageGrab.grab().crop((x, y, x1, y1)).save(str(root.filename))
+        # ImageGrab.grab().crop((x, y, x1, y1)).save(str(root.filename))
+        ImageGrab.grab(bbox=(x, y, x1, y1)).save(str(root.filename))
         root.title(f'Shape Editor • {str(root.filename)}')
 
 
@@ -647,7 +661,6 @@ def Open_Image():
 
 
 def PaintBucket():
-
     color = colorchooser.askcolor()
     canvas = LAYERS_DICT['canvas']
     bucket = canvas.create_rectangle(
@@ -674,7 +687,6 @@ def grab_clipboard():
 
 
 def select_and_crop():
-
     def place_item(event):
         global x3, y3
         if 'CIRCLE3' in Circles:
@@ -847,7 +859,6 @@ def lioi():
     canvas.image_tk = ImageTk.PhotoImage(im)
     image_id = LAYERS_DICT['canvas'].create_image(0, 0, anchor=NW)
     LAYERS_DICT['canvas'].itemconfigure(image_id, image=canvas.image_tk)
-
     LAYERS_DICT['image'] = clipboard_image
     LAYERS_DICT['img'] = image_id
     if SAVED == False:
@@ -865,7 +876,6 @@ def without_color():
         canvas.image_tk = ImageTk.PhotoImage(img)
         image_id = LAYERS_DICT['canvas'].create_image(0, 0, anchor=NW)
         LAYERS_DICT['canvas'].itemconfigure(image_id, image=canvas.image_tk)
-
         LAYERS_DICT['image'] = img
         LAYERS_DICT['img'] = image_id
     except:
@@ -888,16 +898,43 @@ def without_color():
     else:
         root.title(f'Shape Editor • {str(root.filename)} •')
 
+# def animation():
+#     global count
+#     if len(LAYERS_DICT) != 1:
+        
+#         animation_undo()
+#         root.after(100, animation)
+# def hide():
+#     canvas.itemconfigure(LAYERS_DICT[list(LAYERS_DICT.keys())[1]], state='hidden')
+# def animation_undo():
+#     global count
+#     # try:
+#     if len(LAYERS_DICT) == 1:
+#         return None
+#     else:
+#         LAYERS_DICT['canvas'].delete(LAYERS_DICT[list(LAYERS_DICT.keys())[1]])
+#         # canvas.itemconfigure(LAYERS_DICT[list(LAYERS_DICT.keys())[1]], state='normal'/'hidden')
+#         # count += 1
+#         # canvas.update()
+#         # LAYERS_DICT['canvas'].delete(LAYERS_DICT[list(LAYERS_DICT.keys())[1]])
+#         # del LAYERS_DICT[list(LAYERS_DICT.keys())[1]]
+#     # except Exception:
+#     #     messagebox.showerror('ERROR', 'NOTHING LEFT TO UNDO!')
+#     if SAVED == False:
+#         root.title('Shape Editor • Unsaved')
+#     else:
+#         root.title(f'Shape Editor • {str(root.filename)} •')
 
 def undo():
+    global count
     try:
         if len(LAYERS_DICT) == 1:
             LAYERS_DICT['canvas'].destroy()
             del LAYERS_DICT['canvas']
         else:
+            count += 1
             LAYERS_DICT['canvas'].delete(
                 LAYERS_DICT[list(LAYERS_DICT.keys())[-1]])
-            RECYCLED.update({LAYERS_DICT[list(LAYERS_DICT.keys())[-1]]})
             del LAYERS_DICT[list(LAYERS_DICT.keys())[-1]]
     except Exception:
         messagebox.showerror('ERROR', 'NOTHING LEFT TO UNDO!')
@@ -906,9 +943,12 @@ def undo():
     else:
         root.title(f'Shape Editor • {str(root.filename)} •')
 
-def redo():
-    pass
 
+# def add_keyframe():
+#     print(list(LAYERS_DICT.items())[-1])
+#     lay_dict = dict(list(LAYERS_DICT.items())[-1])
+#     lay_dict(list(LAYERS_DICT.items())[-1]).
+#     # LAYERS_DICT[list(LAYERS_DICT.keys())[-1]], state='hidden')
 root.title("Shape Editor")
 menubar = Menu(root)
 CommandMenu = Menu(menubar, tearoff=0)
@@ -923,12 +963,17 @@ CommandMenu.add_command(label="Delete Canvas    Ctrl+D", command=delete_all)
 CommandMenu.add_separator()
 CommandMenu.add_command(label="Clear Items      Ctrl+K", command=clear_canvas)
 CommandMenu.add_command(label='Undo    Ctrl+Z', command=undo)
-CommandMenu.add_command(label='redo', command=redo)
 CommandMenu.add_command(label="Paste    Ctrl+V", command=grab_clipboard)
 CommandMenu.add_command(label="New Canvas     Ctrl+N", command=New_Canvas)
 CommandMenu.add_separator()
 CommandMenu.add_command(label="Exit", command=Exit)
 menubar.add_cascade(label="Commands", menu=CommandMenu)
+# # ===========================================================================
+# AnimationMenu = Menu(menubar, tearoff=0)
+# AnimationMenu.add_command(label='Add Keyframe', command=add_keyframe)
+# AnimationMenu.add_command(label='Play Animation', command=animation)
+# menubar.add_cascade(label='Animation', menu=AnimationMenu)
+# # ===========================================================================
 ViewMenu = Menu(menubar, tearoff=0)
 submenu = Menu(ViewMenu, tearoff=0)
 submenu.add_command(label="Smiley Face", command=smile)
@@ -938,6 +983,7 @@ ViewMenu.add_command(label="Ground", command=ground)
 ViewMenu.add_separator()
 ViewMenu.add_command(label="Document", command=doc)
 menubar.add_cascade(label="View", menu=ViewMenu)
+# ===========================================================================
 EditMenu = Menu(menubar, tearoff=0)
 EditMenu.add_command(label="Free Draw", command=Free_Draw)
 EditMenu.add_separator()
@@ -953,12 +999,14 @@ EditMenu.add_command(label="Contour Image", command=without_color)
 EditMenu.add_separator()
 EditMenu.add_command(label="Mask Image on Image", command=lioi)
 menubar.add_cascade(label="Edit", menu=EditMenu)
+# =============================================================================
 FileMenu = Menu(menubar, tearoff=0)
 FileMenu.add_command(label="Open    Ctrl+O", command=Open_Image)
 FileMenu.add_command(label="Save    Ctrl+S", command=Save_Canvas)
 FileMenu.add_command(label="Save as    Ctrl+Alt+S", command=save_as)
 menubar.add_cascade(label="File", menu=FileMenu)
 root.configure(menu=menubar)
+# =============================================================================
 root.bind("<Alt-s>", shortcut)
 root.bind("<Control-Alt-c>", shortcut2)
 root.bind("<Control-t>", shortcut3)
